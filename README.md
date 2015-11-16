@@ -4,7 +4,7 @@ use it:
 
 javac LSRCompute.java
 
-java LSRCompute routes.lsa <srcNode> <CA/SS>
+java LSRCompute routes.lsa \<srcNode\> \<CA/SS\>
 
 
 

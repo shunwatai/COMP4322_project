@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
+import java.util.Comparator;
 
 class Vertex implements Comparable<Vertex>{
     public final String name;
@@ -17,7 +18,15 @@ class Vertex implements Comparable<Vertex>{
     {
         return Double.compare(minDistance, other.minDistance);
     }
+    // for sorting
+    class CustomComparator implements Comparator<Vertex> {
+        @Override
+        public int compare(Vertex v1, Vertex v2) {
+            return v1.name.compareTo(v2.name);
+        }
+    }
 }
+
 
 class Edge{
     public final Vertex target;
@@ -102,7 +111,7 @@ class LSRCompute{
                 String[] aLineOfrecord = strLine.split("\\s+");
 
                 // create neighbors array
-                ArrayList<Edge> tmpNB = new ArrayList<Edge>(); 
+                ArrayList<Edge> tmpNB = new ArrayList<Edge>();
 
                 for(int neighbors=1; neighbors<aLineOfrecord.length; neighbors++){ // start at 1, exclude 0(newNode itself)
                     int nb = Arrays.asList(nodeName).indexOf( aLineOfrecord[neighbors].substring(0,1)); // take out the neighbor as alphabet
@@ -125,12 +134,11 @@ class LSRCompute{
         switch(args[2].toUpperCase()){
             case "CA":
                 while(true){
-                    computePaths(tmpVertex.get(src));
+                    computePaths(tmpVertex.get(src));  // recompute the shortest path
                     System.out.println( "Source " + tmpVertex.get(src) + ":" );
 
 					for (Vertex v : tmpVertex)
-					{
-						//if(v!=tmpVertex[src]){
+					{						
                         if(v!=tmpVertex.get(src)){
 							System.out.print( v + ": " );
 							List<Vertex> path = getShortestPathTo(v);
@@ -143,10 +151,11 @@ class LSRCompute{
 							System.out.println(" Cost:"+ v.minDistance);
 						}
 					}
-                    addNode(tmpVertex, nodeName);
+                    printAllrela(tmpVertex);    // print out all nodes relations
+                    addNode(tmpVertex, nodeName); // for add or delete nodes
 
-                    for (Vertex v : tmpVertex){ // reset all the distance
-                        v.minDistance = Double.POSITIVE_INFINITY;
+                    for (Vertex allnodes : tmpVertex){ // reset all the distance
+                        allnodes.minDistance = Double.POSITIVE_INFINITY;
                     }
 
 					pressAnyKeyToContinue();
@@ -154,10 +163,10 @@ class LSRCompute{
                 //break;
 
             case "SS":
-                computePaths(tmpVertex.get(src));
-                System.out.println( "Source " + tmpVertex.get(src) + ":" );
-
                 while(true){
+                    computePaths(tmpVertex.get(src));  // recompute the shortest path
+                    System.out.println( "Source " + tmpVertex.get(src) + ":" );
+
                     System.out.print("To which node? ");
                     Scanner sc = new Scanner(System.in);
                     String inputDes = sc.next().toUpperCase();
@@ -172,6 +181,14 @@ class LSRCompute{
                             System.out.print( ">" );
                     }
                     System.out.print(" Cost:"+ v.minDistance);
+                    
+                    printAllrela(tmpVertex);    // print out all nodes relations
+                    addNode(tmpVertex, nodeName); // for add or delete nodes
+
+                    
+                    for (Vertex allnodes : tmpVertex){ // reset all the distance
+                        allnodes.minDistance = Double.POSITIVE_INFINITY;
+                    }
                     pressAnyKeyToContinue();
                 }
         }
@@ -189,39 +206,85 @@ class LSRCompute{
 
     // for add new node
     private static ArrayList<Vertex> addNode(ArrayList<Vertex> vertex, String[] nodes){
-        System.out.print("do you want to add a new node (y/n)? ");
+        System.out.print("do you want to add / delete node (y/n)? ");
         Scanner sc = new Scanner(System.in);
         String ans = sc.next().toUpperCase(); // for Y or N
 
-        if(ans.equals("Y")){
-            System.out.println("please type the new node relation (newNode: existNode1:cost existNode2:cost...):");
+        if(ans.toUpperCase().equals("Y")){
+            System.out.print("so you want to add or delete(add/del)? ");
             sc = new Scanner(System.in);
-            String newRecords = sc.nextLine().toUpperCase(); // for new records
-            String[] aLineOfrecord = newRecords.split("\\s+"); // split by space
-            // create neighbors array
-            ArrayList<Edge> tmpNB = new ArrayList<Edge>();
+            ans = sc.next().toUpperCase();
 
-            // new node
-            vertex.add( new Vertex(aLineOfrecord[0].substring(0,1)) );
+            if(ans.equals("ADD")){
+                System.out.println("please type the new node relation (newNode: existNode1:cost existNode2:cost...):");
+                sc = new Scanner(System.in);
+                String newRecords = sc.nextLine().toUpperCase(); // for new records
+                String[] aLineOfrecord = newRecords.split("\\s+"); // split by space
+                // create neighbors array
+                ArrayList<Edge> tmpNB = new ArrayList<Edge>();
 
-            // add neighbors
-            for(int neighbors=1; neighbors<aLineOfrecord.length; neighbors++){
-                int nb = Arrays.asList(nodes).indexOf( aLineOfrecord[neighbors].substring(0,1));
-                double cost = Double.parseDouble( aLineOfrecord[neighbors].substring(2,3) );
+                // new node
+                vertex.add( new Vertex(aLineOfrecord[0].substring(0,1)) );
+                //Collections.sort(vertex, new CustomComparator());
+                //int newpos = Arrays.asList(nodes).indexOf( aLineOfrecord[0].substring(0,1) ); // take the new position in all nodes after sort
 
-                //System.out.println("tmpNB.add( new Edge("+vertex.get(nb)+","+cost+") )");
-                tmpNB.add( new Edge(vertex.get(nb), cost) );
-                //System.out.println(vertex.get(nb) + ".adjacencies.add(" + vertex.get(vertex.size() - 1) +", "+ cost + ")");
-                vertex.get(nb).adjacencies.add( new Edge(vertex.get(vertex.size() - 1), cost) );
+                // add neighbors
+                for(int neighbors=1; neighbors<aLineOfrecord.length; neighbors++){
+                    int nb = -1; // for locate neighbor index
+                    for(Vertex nodename: vertex){ // finding index of existing node 
+                        if( nodename.name.equals(aLineOfrecord[neighbors].substring(0,1)) ){
+                           nb = vertex.indexOf(nodename); // found index of the existing node, for add in neighbors list to newNode
+                        }
+                    }                    
+                    
+                    double cost = Double.parseDouble( aLineOfrecord[neighbors].substring(2,3) );
+
+                    //System.out.println("tmpNB.add( new Edge("+vertex.get(nb)+","+cost+") )");
+                    tmpNB.add( new Edge(vertex.get(nb), cost) ); // add adjacencies to new node
+                    //System.out.println(vertex.get(nb) + ".adjacencies.add(" + vertex.get(vertex.size()-1) +", "+ cost + ")");
+                    vertex.get(nb).adjacencies.add( new Edge(vertex.get(vertex.size()-1), cost) ); // add adjacencies to new node
+                }
+                vertex.get(vertex.size()-1).adjacencies = tmpNB; // add the neighbor relations into newNode adjacencies
+                //G: B:2 F:3
             }
-            vertex.get(vertex.size() - 1).adjacencies = tmpNB;
-            //System.out.println(vertex.get(5).adjacencies.get(1).target+":"+vertex.get(5).adjacencies.get(1).weight);
-            //G: B:2 F:3
+            else if(ans.equals("DEL")){  // delete node
+                System.out.println("which of the following node you want to delete? ");
+                System.out.println(vertex);    // print out all existing nodes
+                System.out.print("please enter one node only: ");
+                sc = new Scanner(System.in);
+                ans = sc.next().toUpperCase(); // get the node to be removed
+
+                int i=0;
+                while(i<vertex.size()){ // loop all vertexes to search
+                    for(int j=0; j<vertex.get(i).adjacencies.size(); j++){
+                        if(vertex.get(i).adjacencies.get(j).target.name.equals(ans)){  // if itself is the adjacencies of other nodes, remove
+                            vertex.get(i).adjacencies.remove(j);
+                        }
+                    }
+
+                    if( vertex.get(i).name.equals(ans) ){ // if found that node
+                        //System.out.println(ans+" bye");   // delete
+                        vertex.remove(i);                 // after remove, the nodes will pad to left, so position changed in the arraylist
+                    }else{                                // so if remoced, dont increment i
+                        i=i+1;
+                    }
+                }
+            }
         }
-        else{
-            
-        }
+        Collections.sort(vertex, new CustomComparator());
 
         return vertex;
+    }
+
+    public static void printAllrela(ArrayList<Vertex> vertexies){
+        System.out.println();
+        System.out.println("======= below are the relations =======");
+        for(int i=0; i<vertexies.size(); i++){
+            System.out.print(vertexies.get(i).name + ": ");
+            for(int j=0; j<vertexies.get(i).adjacencies.size(); j++){
+                 System.out.print(vertexies.get(i).adjacencies.get(j).target + ":" + vertexies.get(i).adjacencies.get(j).weight + " ");
+            }
+            System.out.println();
+        }
     }
 }
