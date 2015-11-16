@@ -18,15 +18,15 @@ class Vertex implements Comparable<Vertex>{
     {
         return Double.compare(minDistance, other.minDistance);
     }
-    // for sorting
-    class CustomComparator implements Comparator<Vertex> {
-        @Override
-        public int compare(Vertex v1, Vertex v2) {
-            return v1.name.compareTo(v2.name);
-        }
-    }
 }
 
+// for sorting
+class CustomComparator implements Comparator<Vertex> {
+    @Override
+    public int compare(Vertex v1, Vertex v2) {
+        return v1.name.compareTo(v2.name);
+    }
+}
 
 class Edge{
     public final Vertex target;
@@ -131,14 +131,13 @@ class LSRCompute{
         int src = 0;
         src = Arrays.asList(nodeName).indexOf( args[1] );
 
-        switch(args[2].toUpperCase()){
-            case "CA":
+        switch( args[2].toUpperCase() ){
+            case "CA":  // compute all nodes
                 while(true){
                     computePaths(tmpVertex.get(src));  // recompute the shortest path
                     System.out.println( "Source " + tmpVertex.get(src) + ":" );
 
-					for (Vertex v : tmpVertex)
-					{						
+					for (Vertex v : tmpVertex) {  // print out all the shortest paths of each node
                         if(v!=tmpVertex.get(src)){
 							System.out.print( v + ": " );
 							List<Vertex> path = getShortestPathTo(v);
@@ -162,7 +161,7 @@ class LSRCompute{
 				}
                 //break;
 
-            case "SS":
+            case "SS":  // print a specific node
                 while(true){
                     computePaths(tmpVertex.get(src));  // recompute the shortest path
                     System.out.println( "Source " + tmpVertex.get(src) + ":" );
@@ -181,11 +180,11 @@ class LSRCompute{
                             System.out.print( ">" );
                     }
                     System.out.print(" Cost:"+ v.minDistance);
-                    
+
                     printAllrela(tmpVertex);    // print out all nodes relations
                     addNode(tmpVertex, nodeName); // for add or delete nodes
 
-                    
+
                     for (Vertex allnodes : tmpVertex){ // reset all the distance
                         allnodes.minDistance = Double.POSITIVE_INFINITY;
                     }
@@ -194,7 +193,7 @@ class LSRCompute{
         }
     }
 
-    private static void pressAnyKeyToContinue(){
+    private static void pressAnyKeyToContinue(){  // see function name
         System.out.println(" [Press any key to continue]");
         try {
             System.in.read();
@@ -225,18 +224,16 @@ class LSRCompute{
 
                 // new node
                 vertex.add( new Vertex(aLineOfrecord[0].substring(0,1)) );
-                //Collections.sort(vertex, new CustomComparator());
-                //int newpos = Arrays.asList(nodes).indexOf( aLineOfrecord[0].substring(0,1) ); // take the new position in all nodes after sort
 
                 // add neighbors
                 for(int neighbors=1; neighbors<aLineOfrecord.length; neighbors++){
                     int nb = -1; // for locate neighbor index
-                    for(Vertex nodename: vertex){ // finding index of existing node 
+                    for(Vertex nodename: vertex){ // finding index of existing node
                         if( nodename.name.equals(aLineOfrecord[neighbors].substring(0,1)) ){
                            nb = vertex.indexOf(nodename); // found index of the existing node, for add in neighbors list to newNode
                         }
-                    }                    
-                    
+                    }
+
                     double cost = Double.parseDouble( aLineOfrecord[neighbors].substring(2,3) );
 
                     //System.out.println("tmpNB.add( new Edge("+vertex.get(nb)+","+cost+") )");
@@ -271,7 +268,7 @@ class LSRCompute{
                 }
             }
         }
-        Collections.sort(vertex, new CustomComparator());
+        Collections.sort(vertex, new CustomComparator());  // sort nodeName in accending order
 
         return vertex;
     }
