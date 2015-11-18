@@ -25,14 +25,6 @@ class Vertex implements Comparable<Vertex>{
     }
 }
 
-// for sorting
-class CustomComparator implements Comparator<Vertex> {
-    @Override
-    public int compare(Vertex v1, Vertex v2){
-        return v1.name.compareTo(v2.name);
-    }
-}
-
 class Edge{
     public final Vertex target;
     public final int cost;
@@ -42,6 +34,13 @@ class Edge{
 	}
 }
 
+// for sorting
+class CustomComparator implements Comparator<Vertex> {
+    @Override
+    public int compare(Vertex v1, Vertex v2){
+        return v1.name.compareTo(v2.name);
+    }
+}
 
 class LSRCompute{
     public static void computePaths(Vertex source) {
