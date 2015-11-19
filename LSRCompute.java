@@ -6,51 +6,75 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.Comparator;
+import java.util.Iterator;
 
 class Vertex implements Comparable<Vertex>{
     public final String name;
     public ArrayList<Edge> adjacencies;
-    public double minDistance = Double.POSITIVE_INFINITY;
+    public int minDistance = Integer.MAX_VALUE;
     public Vertex previous;
-    public Vertex(String argName) { name = argName; }
-    public String toString() { return name; }
-    public int compareTo(Vertex other)
-    {
-        return Double.compare(minDistance, other.minDistance);
-    }
-}
-
-// for sorting
-class CustomComparator implements Comparator<Vertex> {
-    @Override
-    public int compare(Vertex v1, Vertex v2) {
-        return v1.name.compareTo(v2.name);
+	
+    public Vertex(String argName){
+		name = argName;
+	}
+    public String toString(){
+		return name;
+	}
+    public int compareTo(Vertex other){
+        return Integer.compare(minDistance, other.minDistance);
     }
 }
 
 class Edge{
     public final Vertex target;
-    public final double weight;
-    public Edge(Vertex argTarget, double argWeight)
-    { target = argTarget; weight = argWeight; }
+    public final int cost;
+	
+    public Edge(Vertex argTarget, int argCost){
+		target = argTarget; cost = argCost;
+	}
 }
 
+// for sorting
+class CustomComparator implements Comparator<Vertex> {
+    @Override
+    public int compare(Vertex v1, Vertex v2){
+        return v1.name.compareTo(v2.name);
+    }
+}
 
 class LSRCompute{
     public static void computePaths(Vertex source) {
-        source.minDistance = 0.;
+        source.minDistance = 0;
+		
         PriorityQueue<Vertex> vertexQueue = new PriorityQueue<Vertex>();
         vertexQueue.add(source);
 
         while (!vertexQueue.isEmpty()) {
+		/*
+		Iterator<Vertex> iterator = vertexQueue.iterator();
+		System.out.print("queue: ");
+		while(iterator.hasNext()){
+			System.out.print (iterator.next().toString() + " ");
+		}
+		System.out.println();*/
+		
             Vertex u = vertexQueue.poll();
+		/*
+		iterator = vertexQueue.iterator();
+		System.out.print("after queue: ");
+		while(iterator.hasNext()){
+			System.out.print (iterator.next().toString() + " ");
+		}
+		System.out.println();
+		*/
+			
             //System.out.print("u: "+u);
             // Visit each edge exiting u
             for (Edge e : u.adjacencies){
                 //System.out.print(" e: "+e.target.name);
                 Vertex v = e.target;
-                double weight = e.weight;
-                double distanceThroughU = u.minDistance + weight;
+                int cost = e.cost;
+                int distanceThroughU = u.minDistance + cost;
                 if (distanceThroughU < v.minDistance) {
                     vertexQueue.remove(v);
 
@@ -61,6 +85,7 @@ class LSRCompute{
             }
         }
     }
+	
     public static List<Vertex> getShortestPathTo(Vertex target) {
         List<Vertex> path = new ArrayList<Vertex>();
         for (Vertex vertex = target; vertex != null; vertex = vertex.previous)
@@ -72,8 +97,6 @@ class LSRCompute{
 
 
     public static void main(String[] args){
-        System.out.println("test");
-
         String[] nodeName = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
 
         int totalNodes = 0;
@@ -81,7 +104,7 @@ class LSRCompute{
         int j = 0;
 
         try{
-            LineNumberReader  lnr = new LineNumberReader(new FileReader(new File("routes.lsa")));
+            LineNumberReader lnr = new LineNumberReader(new FileReader(new File("routes.lsa")));
             lnr.skip(Long.MAX_VALUE);
             //totalNodes = lnr.getLineNumber() + 1; //Add 1 because line index starts at 0
             totalNodes = lnr.getLineNumber();
@@ -92,6 +115,7 @@ class LSRCompute{
 
         // create all nodes by total number
         ArrayList<Vertex> tmpVertex = new ArrayList<Vertex>();
+		
         for(i=0; i<totalNodes; i++){
             // create new node(A,B,C...), assign it into tmpVertex
             tmpVertex.add(new Vertex(nodeName[i]));
@@ -103,8 +127,7 @@ class LSRCompute{
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
 
             String strLine;
-            i = 0;  //
-            int addNeighbor = 0;
+            i = 0;
             //Read File Line By Line, for create neighbors
             while ((strLine = br.readLine()) != null){
                 // split by spaces store in aLineOfrecord
@@ -115,7 +138,7 @@ class LSRCompute{
 
                 for(int neighbors=1; neighbors<aLineOfrecord.length; neighbors++){ // start at 1, exclude 0(newNode itself)
                     int nb = Arrays.asList(nodeName).indexOf( aLineOfrecord[neighbors].substring(0,1)); // take out the neighbor as alphabet
-                    double cost = Double.parseDouble( aLineOfrecord[neighbors].substring(2,3) );  // take the neighbor cost
+                    int cost = Integer.parseInt( aLineOfrecord[neighbors].substring(2,3) );  // take the neighbor cost
                     tmpNB.add( new Edge(tmpVertex.get(nb), cost) );  // add into the neighbor array
                 }
                 tmpVertex.get(j++).adjacencies = tmpNB;  // make the relation betwwen the newNode and its neighbors
@@ -154,7 +177,7 @@ class LSRCompute{
                     addNode(tmpVertex, nodeName); // for add or delete nodes
 
                     for (Vertex allnodes : tmpVertex){ // reset all the distance
-                        allnodes.minDistance = Double.POSITIVE_INFINITY;
+                        allnodes.minDistance = Integer.MAX_VALUE;
                     }
 
 					pressAnyKeyToContinue();
@@ -186,7 +209,7 @@ class LSRCompute{
 
 
                     for (Vertex allnodes : tmpVertex){ // reset all the distance
-                        allnodes.minDistance = Double.POSITIVE_INFINITY;
+                        allnodes.minDistance = Integer.MAX_VALUE;;
                     }
                     pressAnyKeyToContinue();
                 }
@@ -234,7 +257,7 @@ class LSRCompute{
                         }
                     }
 
-                    double cost = Double.parseDouble( aLineOfrecord[neighbors].substring(2,3) );
+                    int cost = Integer.parseInt( aLineOfrecord[neighbors].substring(2,3) );
 
                     //System.out.println("tmpNB.add( new Edge("+vertex.get(nb)+","+cost+") )");
                     tmpNB.add( new Edge(vertex.get(nb), cost) ); // add adjacencies to new node
@@ -267,7 +290,9 @@ class LSRCompute{
                     }
                 }
             }
-        }
+        }else if(ans.toUpperCase().equals("N")){
+			//System.exit(0);
+		}
         Collections.sort(vertex, new CustomComparator());  // sort nodeName in accending order
 
         return vertex;
@@ -279,7 +304,7 @@ class LSRCompute{
         for(int i=0; i<vertexies.size(); i++){
             System.out.print(vertexies.get(i).name + ": ");
             for(int j=0; j<vertexies.get(i).adjacencies.size(); j++){
-                 System.out.print(vertexies.get(i).adjacencies.get(j).target + ":" + vertexies.get(i).adjacencies.get(j).weight + " ");
+                 System.out.print(vertexies.get(i).adjacencies.get(j).target + ":" + vertexies.get(i).adjacencies.get(j).cost + " ");
             }
             System.out.println();
         }
